@@ -1,0 +1,22 @@
+- name: Ensure group "{{ username }}" exists
+  ansible.builtin.group:
+    name: "{{ username }}"
+    state: present
+    gid: 2000
+
+- name: Ensure "{{ username }}" user exists and part of "{{ username }}" group
+  ansible.builtin.user:
+    name: "{{ username }}"
+    shell: /usr/bin/bash
+    group: "{{ username }}"
+    create_home: yes
+    password: '!'
+    uid: 2000
+
+- name: Set authorized key for SSH
+  ansible.posix.authorized_key:
+    user: "{{ username }}"
+    key: "{{ lookup('file', ssh_public_key) }}" 
+    state: present
+    exclusive: true
+    manage_dir: true # Already default but very important. Ensures .ssh directory exists with proper owner and permissions.

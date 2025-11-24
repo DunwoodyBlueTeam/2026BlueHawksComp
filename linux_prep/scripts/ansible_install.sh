@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# Description: Install ansible
+# Steps: Make ssh key, get ssh hostkeys, makes python virtual environment, installs ansible to the virtual environment.
+
+DIRECTORY=~/repo
+SSH_HOSTS=~/.ssh/known_hosts
+set -euo pipefail
+
+ssh-keygen -t ed25519
+
+#https://stackoverflow.com/questions/427979/how-do-you-extract-ip-addresses-from-files-using-a-regex-in-a-linux-shell#427989
+IP_ADDRESSES=$(grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}' $DIRECTORY/inventory.ini | uniq)
+
+touch $SSH_HOSTS 
+chmod go-rwx $SSH_HOSTS
+
+set +euo pipefail
+for IP in $IP_ADDRESSES
+do
+  # Checking if host is already known
+  ssh-keygen -F $IP >> /dev/null
+  if [ "$?" -eq 0 ]
+  then
+    echo "Skipping ${IP}. The host should already be added"
+    continue
+  fi
+
+  echo "Adding ${IP} to ${SSH_HOSTS}"
+  ssh-keyscan -H $IP >> $SSH_HOSTS 2> /dev/null
+done
+set -euo pipefail
+
+
+mkdir ~/env || echo "Skipping mkdir ~/env"
+python3 -m venv ~/env
+source ~/env/bin/activate
+pip install --upgrade pip
+pip install ansible
+
+# Probably unnecessary
+ansible-galaxy collection install ansible.posix
+
+export ANSIBLE_CONFIG=$DIRECTORY/scripts/initial_ansible.cfg
+until ansible-playbook --ask-become-pass $DIRECTORY/ansible_managed_node_install.yml
+do
+    echo "Failed initial playbook, trying again."
+done
+echo "Remember to run "source ~/env/bin/activate" if you did not source this script."

@@ -1,0 +1,8 @@
+---
+  - name: Prepare ansible managed nodes
+    hosts: all
+    roles:
+      - role: ansible_managed
+        vars:
+          username: ansible
+          ssh_public_key: "/home/ansible-control/.ssh/id_ed25519.pub"
