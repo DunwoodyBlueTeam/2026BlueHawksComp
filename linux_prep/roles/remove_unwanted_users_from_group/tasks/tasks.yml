@@ -1,0 +1,24 @@
+- name: Get data for "{{ group }}" group
+  ansible.builtin.command: getent group {{ group|quote }}
+  register: ansible_group_data
+  changed_when: false
+
+- name: Extract members from "{{ group }}" group data into an ansible list
+  ansible.builtin.set_fact:
+    ansible_members: "{{ (ansible_group_data.stdout.split(':') | default([])) [3] | default('') | split(',') | reject('equalto','') | list }}"
+
+- name: Compute unwanted users part of "{{ group }}" group
+  ansible.builtin.set_fact:
+    ansible_members_unwanted: "{{ ansible_members | reject('equalto', user_to_keep) | list }}"
+
+- name: Print the unwanted users
+  ansible.builtin.debug:
+    msg: "{{ ansible_members_unwanted }}"
+
+#https://stackoverflow.com/questions/38988986/how-to-remove-user-from-a-specified-group-in-ansible
+- name: Remove unwanted users part of the "{{ group }}" group
+  ansible.builtin.command: gpasswd -d {{ item }} {{ group }}
+  loop: "{{ ansible_members_unwanted }}"
+  register: remove_results
+  changed_when: remove_results is defined and (remove_results.rc == 0)   # rc = return code
+  failed_when: remove_results is defined and (remove_results.rc not in [0,3])

@@ -13,6 +13,13 @@
     password: '!'
     uid: 2000
 
+- name: Run tasks for removing unwanted users from group "{{ username }}"
+  ansible.builtin.include_role:
+    name: remove_unwanted_users_from_group
+  vars:
+    group: "{{ username }}"
+    user_to_keep: " {{ username }} "
+
 - name: Allow "{{ username }}" group to use sudo
   ansible.builtin.lineinfile:
     dest: /etc/sudoers
