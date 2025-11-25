@@ -39,7 +39,7 @@ if ! id "${USER}" >/dev/null 2>&1; then
     #sudo usermod -aG sudo $USER
 
     sudo chmod o-rwx /home/$USER
-    sudo rsync -av --exclude=.git --exclude=*setup.sh $SCRIPTDIRECTORY /home/$USER/repo
+    sudo rsync -av --exclude=.git --exclude=*setup.sh $SCRIPTDIRECTORY/ /home/$USER/repo
     sudo chown -R $USER:$USER /home/$USER/repo
     echo "Successfully copied."
 fi
