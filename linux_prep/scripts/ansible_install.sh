@@ -42,7 +42,7 @@ pip install ansible
 ansible-galaxy collection install ansible.posix
 
 export ANSIBLE_CONFIG=$DIRECTORY/scripts/initial_ansible.cfg
-until ansible-playbook --ask-become-pass $DIRECTORY/ansible_managed_node_install.yml
+until ansible-playbook $DIRECTORY/ansible_managed_node_install.yml
 do
     echo "Failed initial playbook, trying again."
 done
