@@ -13,6 +13,14 @@
     password: '!'
     uid: 2000
 
+- name: Allow "{{ username }}" group to use sudo
+  ansible.builtin.lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: "^%{{ username }}"
+    line: "%{{ username }} ALL=(ALL) ALL"
+    validate: 'visudo -cf %s'
+
 - name: Set authorized key for SSH
   ansible.posix.authorized_key:
     user: "{{ username }}"
