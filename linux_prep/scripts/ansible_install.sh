@@ -3,6 +3,12 @@
 # Description: Install ansible
 # Steps: Make ssh key, get ssh hostkeys, makes python virtual environment, installs ansible to the virtual environment.
 
+if [ $(whoami) != "ansible-control" ];
+then
+  echo "Please install run setup.sh first!"
+  exit 1
+fi
+
 DIRECTORY=~/repo
 SSH_HOSTS=~/.ssh/known_hosts
 set -euo pipefail
