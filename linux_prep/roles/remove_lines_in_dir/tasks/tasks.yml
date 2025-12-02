@@ -1,0 +1,12 @@
+- name: Find files in "{{ file_path }}"
+  ansible.builtin.find:
+    paths: "{{ file_path }}"
+    file_type: file
+  register: found_files
+
+- name: Ensure no files in "{{ file_path }}" contain line "{{ line_regex }}"
+  ansible.builtin.lineinfile:
+    path: "{{ item.path }}"
+    state: absent
+    regexp: "{{ line_regex }}"
+  loop: "{{ found_files.files }}"
