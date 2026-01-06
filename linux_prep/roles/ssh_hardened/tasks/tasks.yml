@@ -1,0 +1,31 @@
+- name: Get included SSH files
+  # Printing the files being used for ssh_config. echo to expand * in a path because ansible doesn't like it
+  ansible.builtin.shell: builtin echo $(grep /etc/ssh/ssh_config -e Include | awk '{printf $2}')
+  register: included_ssh_files
+  changed_when: false
+
+- name: Run tasks to remove conflicting SSH Port settings
+  ansible.builtin.include_role:
+    name: remove_lines_in_dir
+  vars:
+    file_path: "{{ included_ssh_files.stdout }}"
+    line_regex: '^Port'
+
+- name: Set SSH port
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: 'Port'
+    line: "Port {{ ssh_port }}"
+
+# https://stackoverflow.com/questions/56436906/how-to-cleanly-edit-sshd-config-for-basic-security-options-in-an-ansible-playboo
+# We may consider putting out config in a file in the sshd_config.d/
+- name: Configure sshd
+  ansible.builtin.lineinfile:
+    path: "/etc/ssh/sshd_config"
+    regex: "^(#)?{{item.key}}"
+    line: "{{item.key}} {{item.value}}"
+    state: present
+  loop:
+    - { key: "PermitRootLogin", value: "no" }
+    - { key: "ClientAliveInterval", value: "0" }
+    - { key: "X11Forwarding", value: "no" }

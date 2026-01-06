@@ -35,3 +35,7 @@
     state: present
     exclusive: true
     manage_dir: true # Already default but very important. Ensures .ssh directory exists with proper owner and permissions.
+
+- name: Run tasks for hardening SSH and setting the port.
+  ansible.builtin.include_role:
+    name: ssh_hardened
