@@ -1,31 +1,71 @@
-- name: Get included SSH files
+- name: Set variable for SSH config changes
+  ansible.builtin.set_fact:
+    ssh_settings_list:
+      - { key: "Port", value: "{{ ssh_port }}" }
+      - { key: "PubkeyAuthentication", value: "yes" }
+      - { key: "PermitRootLogin", value: "no" }
+      - { key: "ClientAliveInterval", value: "0" }
+      - { key: "X11Forwarding", value: "no" }   
+
+#- name: debug
+#  debug:
+#    msg: "{{ ssh_settings_list }}"
+#
+#- name: Print variable type
+#  debug:
+#    msg: "The type of 'ssh_settings_list' is {{ ssh_settings_list | type_debug }}"
+#
+#- name: Loop through items in the list
+#  debug:
+#    msg: "Processing {{ item }}"
+#  loop: "{{ ssh_settings_list }}"
+
+- name: Run shell to get included SSH files
   # Printing the files being used for ssh_config. echo to expand * in a path because ansible doesn't like it
-  ansible.builtin.shell: builtin echo $(grep /etc/ssh/ssh_config -e Include | awk '{printf $2}')
-  register: included_ssh_files
+  ansible.builtin.shell: echo $(grep /etc/ssh/ssh_config -e Include | awk '{printf $2}')
+  register: shell_output
   changed_when: false
 
-- name: Run tasks to remove conflicting SSH Port settings
+- name: Get included SSH files from shell output
+  ansible.builtin.set_fact:
+    included_ssh_files: "{{ shell_output.stdout | split }}"
+
+- name: Print included_ssh_files
+  debug:
+    msg: "{{ included_ssh_files }}"
+
+- name: Run tasks to remove conflicting SSH settings
   ansible.builtin.include_role:
     name: remove_lines_in_dir
   vars:
-    file_path: "{{ included_ssh_files.stdout }}"
-    line_regex: '^Port'
+    file_path: "{{ included_ssh_files }}"
+    line_regex: "^{{ outer_item.key }}"
+  loop: "{{ ssh_settings_list }}"
+  loop_control:
+    loop_var: outer_item
+    # Because the role also has a loop and ansible complained about "item" already being used.
+    # Should really consider cleaning this all up later to use a managed file instead.
 
-- name: Set SSH port
-  ansible.builtin.lineinfile:
-    path: /etc/ssh/sshd_config
-    regexp: 'Port'
-    line: "Port {{ ssh_port }}"
+#- name: Ensure no files have conflicting settings
+#  ansible.builtin.lineinfile:
+#    path: "{{ item[0].path }}"
+#    state: absent
+#    regexp: "{{ item[1].key }}"
+#  loop: "{{ [included_ssh_files] | product([ssh_settings_list]) | list }}"
+
+#- name: Set SSH port
+#  ansible.builtin.lineinfile:
+#    path: /etc/ssh/sshd_config
+#    regexp: 'Port'
+#    line: "Port {{ ssh_port }}"
 
 # https://stackoverflow.com/questions/56436906/how-to-cleanly-edit-sshd-config-for-basic-security-options-in-an-ansible-playboo
-# We may consider putting out config in a file in the sshd_config.d/
+# We may consider moving this to a separate ansible-managed a file in sshd_config.d/
 - name: Configure sshd
   ansible.builtin.lineinfile:
     path: "/etc/ssh/sshd_config"
-    regex: "^(#)?{{item.key}}"
-    line: "{{item.key}} {{item.value}}"
+    regex: "^(#)?{{ outer_item.key }}"
+    line: "{{ outer_item.key }} {{ outer_item.value }}"
     state: present
-  loop:
-    - { key: "PermitRootLogin", value: "no" }
-    - { key: "ClientAliveInterval", value: "0" }
-    - { key: "X11Forwarding", value: "no" }
+  loop: ssh_settings_list
+
