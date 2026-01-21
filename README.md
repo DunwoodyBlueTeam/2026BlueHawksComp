@@ -3,9 +3,17 @@
 
 This branch contains Splunk-related setup scripts.
 ---
-## STEP 1 - Reset root/sysadmin password
-## STEP 2 - Change admin(splunkweb) password, Add listening port (9997), add custom indexes (so far just "wineventlogs")
-## STEP 3 – Install Windows Universal Forwarder
+
+## STEP 1 - 
+Reset root/sysadmin password
+---
+
+## STEP 2 -
+Change admin(splunkweb) password, Add listening port (9997), add custom indexes (so far just "wineventlogs")
+---
+
+## STEP 3 – 
+Install Windows Universal Forwarder
 Run on **each Windows VM** as soon as possible!!
 
 ### Requirements
