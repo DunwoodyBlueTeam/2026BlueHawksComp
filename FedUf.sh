@@ -115,8 +115,7 @@ echo "[OK] inputs.conf written"
 
 # ---------- 9) Set forward server ----------
 echo "[*] Setting forward-server to ${SPLUNK_IP}:${SPLUNK_REC_PORT}..."
-"${SPLUNK_HOME}/bin/splunk" add forward-server "${SPLUNK_IP}:${SPLUNK_REC_PORT}" \
-  -auth "${SPLUNK_ADMIN_USER}:${SPLUNK_ADMIN_PASS}"
+"${SPLUNK_HOME}/bin/splunk" add forward-server "${SPLUNK_IP}:${SPLUNK_REC_PORT}" -auth "${SPLUNK_ADMIN_USER}:${SPLUNK_ADMIN_PASS}"
 
 # ---------- 10) Enable boot-start (best effort) ----------
 echo "[*] Enabling boot-start..."
