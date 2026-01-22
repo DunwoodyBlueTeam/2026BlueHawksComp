@@ -6,3 +6,7 @@
         vars:
           username: ansible
           ssh_public_key: "/home/ansible-control/.ssh/id_ed25519.pub"
+      - role: ssh_hardened
+        vars:
+          ssh_port: 22
+          linux_private_network_cidr: 172.20.242.0/24

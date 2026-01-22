@@ -1,0 +1,11 @@
+# https://www.cyberciti.biz/tips/checking-openssh-sshd-configuration-syntax-errors.html
+- name: Validate SSH config
+  ansible.builtin.command: /usr/sbin/sshd -t
+  register: command_result
+  failed_when: command_result.rc != 0
+  notify: Restart SSH
+
+- name: Restart SSH
+  ansible.builtin.service:
+    name: "{{ (ansible_facts['os_family'] == 'Debian') | ansible.builtin.ternary('ssh', 'sshd') }}"
+    state: restarted
