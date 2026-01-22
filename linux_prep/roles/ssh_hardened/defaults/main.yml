@@ -2,3 +2,4 @@ linux_private_network_cidr: 172.20.242.0/24
 ssh_port: 22
 sshd_config_d_path: "/etc/ssh/sshd_config.d/"
 sshd_config_d_name: "10-bluehawks_ssh_config.conf"
+firewalld_default_zone: public

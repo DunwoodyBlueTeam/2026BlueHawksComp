@@ -40,3 +40,105 @@
     state: present
   when: ansible_facts['os_family'] == 'RedHat'
   notify: Validate SSH config
+
+
+- name: Ensure ufw package present on Debian-based systems
+  ansible.builtin.package:
+    name:
+      - ufw
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: UFW default deny incoming
+  community.general.ufw:
+    default: deny
+    direction: incoming
+    state: enabled
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: UFW default allow outgoing
+  community.general.ufw:
+    default: allow
+    direction: outgoing
+    state: enabled
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: UFW default deny routed
+  community.general.ufw:
+    default: deny
+    direction: routed
+    state: enabled
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: UFW allow tcp port "{{ ssh_port }}" for SSH from "{{ linux_private_network_cidr }}"
+  community.general.ufw:
+    rule: allow
+    port: "{{ ssh_port }}"
+    proto: tcp
+    from_ip: "{{ linux_private_network_cidr }}"
+    comment: ssh
+    state: enabled
+  when: ansible_facts['os_family'] == 'Debian'
+
+
+- name: Ensure firewalld package present on Fedora/RedHat-based systems
+  ansible.builtin.package:
+    name:
+      - firewalld
+  when: ansible_facts['os_family'] == 'RedHat'
+
+- name: Firewalld set default zone to "{{ firewalld_default_zone }}"
+  ansible.builtin.command: "firewall-cmd --set-default-zone={{ firewalld_default_zone }}"
+  register: command_result
+  changed_when: "'ZONE_ALREADY_SET' not in command_result.stderr and 'success' in command_result.stdout"
+  failed_when: command_result.rc != 0
+  when: ansible_facts['os_family'] == 'RedHat'
+  notify: Restart Firewalld
+
+- name: Firewalld set target to DROP (drop packets that don't match a rule) for "{{ firewalld_default_zone}}" zone
+  ansible.posix.firewalld:
+    target: DROP
+    zone: "{{ firewalld_default_zone }}"
+    permanent: true
+    state: enabled
+  when: ansible_facts['os_family'] == 'RedHat'
+  notify: Restart Firewalld
+
+- name: Firewalld allow tcp port "{{ ssh_port }}" for SSH in internal zone
+  ansible.posix.firewalld:
+    zone: internal
+    permanent: true
+    port: "{{ ssh_port }}/tcp"
+    state: enabled
+  when: ansible_facts['os_family'] == 'RedHat'
+  notify: Restart Firewalld
+
+- name: Firewalld block SSH by default
+  ansible.posix.firewalld:
+    zone: "{{ item }}"
+    permanent: true
+    service: ssh
+    state: disabled
+  loop:
+    - "{{ firewalld_default_zone }}"
+    - internal
+  when: ansible_facts['os_family'] == 'RedHat'
+  notify: Restart Firewalld
+
+- name: Firewalld forwarding disabled in internal zone
+  ansible.posix.firewalld:
+    zone: internal
+    permanent: true
+    forward: false
+    state: enabled
+  when: ansible_facts['os_family'] == 'RedHat'
+  notify: Restart Firewalld
+
+- name: Firewalld allow traffic from "{{ linux_private_network_cidr }}" in internal zone
+  ansible.posix.firewalld:
+    zone: internal
+    permanent: true
+    #forward: false
+    source: "{{ linux_private_network_cidr }}"
+    state: enabled
+  when: ansible_facts['os_family'] == 'RedHat'
+  notify: Restart Firewalld
