@@ -1,118 +1,134 @@
 #!/bin/bash
 # ============================================================
-# linuxUF_fedora42_linuxlogs.sh
-# Fedora 42 UF install && config.
-# Sends logs to Splunk index: linuxlogs
-# Forwards to <SPLUNK_IP>:9997
+# FedUf.sh (Fedora 42)
+# Installs Splunk Universal Forwarder, seeds UF admin user,
+# monitors high-value logs if they exist, and forwards to
+# SPLUNK_IP:9997 into index=linuxlogs.
 # ============================================================
 
 set -e
 
+# ---------- 1) Root check ----------
 if [ "$EUID" -ne 0 ]; then
-  echo "[ERROR] Run as root: sudo ./linuxUF_fedora42_linuxlogs.sh"
+  echo "[ERROR] Run as root: sudo bash FedUf.sh"
   exit 1
 fi
 
-echo "Enter Splunk Enterprise (Indexer) IP:"
-read -r SPLUNK_IP
-[ -z "$SPLUNK_IP" ] && echo "[ERROR] Splunk IP cannot be empty." && exit 1
+# ---------- 2) PROMPT: Splunk Enterprise IP ----------
+read -r -p "Enter Splunk Enterprise (Indexer) IP (example: 10.0.0.70): " SPLUNK_IP
+if [ -z "$SPLUNK_IP" ]; then
+  echo "[ERROR] Splunk IP cannot be empty."
+  exit 1
+fi
 
-echo "Create a local Splunk UF admin username (example: admin):"
-read -r SPLUNK_ADMIN_USER
-[ -z "$SPLUNK_ADMIN_USER" ] && echo "[ERROR] Username cannot be empty." && exit 1
+# ---------- 3) PROMPT: UF admin username/password ----------
+read -r -p "Create a local Splunk UF admin username (example: admin): " SPLUNK_ADMIN_USER
+if [ -z "$SPLUNK_ADMIN_USER" ]; then
+  echo "[ERROR] Username cannot be empty."
+  exit 1
+fi
 
-echo "Create a local Splunk UF admin password (input hidden):"
-read -rs SPLUNK_ADMIN_PASS; echo
-echo "Confirm password:"
-read -rs SPLUNK_ADMIN_PASS_CONFIRM; echo
-[ "$SPLUNK_ADMIN_PASS" != "$SPLUNK_ADMIN_PASS_CONFIRM" ] && echo "[ERROR] Passwords do not match." && exit 1
+read -rs -p "Create a local Splunk UF admin password (input hidden): " SPLUNK_ADMIN_PASS
+echo
+read -rs -p "Confirm password: " SPLUNK_ADMIN_PASS_CONFIRM
+echo
+if [ "$SPLUNK_ADMIN_PASS" != "$SPLUNK_ADMIN_PASS_CONFIRM" ]; then
+  echo "[ERROR] Passwords do not match."
+  exit 1
+fi
+
+# ---------- 4) CHANGE ME (if needed) ----------
+SPLUNK_HOME="/opt/splunkforwarder"
+SPLUNK_REC_PORT="9997"
+SPLUNK_INDEX="linuxlogs"
 
 UF_PKG="splunkforwarder-9.1.0-1c86ca0bacc3-Linux-x86_64.tgz"
 UF_URL="https://download.splunk.com/products/universalforwarder/releases/9.1.0/linux/${UF_PKG}"
-SPLUNK_HOME="/opt/splunkforwarder"
-SPLUNK_REC_PORT="9997"
 
-# ---------- Index = linuxlogs -> MAKE SURE THIS WAS ADDED ON ENTERPRISE ----------
-SPLUNK_INDEX="linuxlogs"
-
-echo "[*] Downloading UF..."
+# ---------- 5) Download + install UF ----------
+echo "[*] Downloading Splunk Universal Forwarder..."
 cd /tmp
 wget -q --show-progress -O "$UF_PKG" "$UF_URL"
 
-echo "[*] Installing UF..."
+echo "[*] Installing UF to /opt..."
 tar -xzf "$UF_PKG" -C /opt
 
-echo "[*] Seeding UF admin user..."
-USERSEED_DIR="$SPLUNK_HOME/etc/system/local"
+# ---------- 6) Seed admin user BEFORE first start ----------
+echo "[*] Seeding UF admin user (user-seed.conf)..."
+USERSEED_DIR="${SPLUNK_HOME}/etc/system/local"
 mkdir -p "$USERSEED_DIR"
-cat > "$USERSEED_DIR/user-seed.conf" <<EOF
-[user_info]
-USERNAME = $SPLUNK_ADMIN_USER
-PASSWORD = $SPLUNK_ADMIN_PASS
-EOF
-chmod 600 "$USERSEED_DIR/user-seed.conf"
 
-echo "[*] Starting UF..."
-"$SPLUNK_HOME/bin/splunk" start --accept-license --answer-yes --no-prompt
+printf "%s\n" \
+"[user_info]" \
+"USERNAME = ${SPLUNK_ADMIN_USER}" \
+"PASSWORD = ${SPLUNK_ADMIN_PASS}" \
+> "${USERSEED_DIR}/user-seed.conf"
 
-echo "[*] Writing inputs.conf (Fedora 42) → index=${SPLUNK_INDEX}..."
-INPUTS_FILE="$SPLUNK_HOME/etc/system/local/inputs.conf"
+chmod 600 "${USERSEED_DIR}/user-seed.conf"
 
-# Helper: only add a monitor if the file exists 
+# ---------- 7) Start UF + accept license ----------
+echo "[*] Starting UF and accepting license..."
+"${SPLUNK_HOME}/bin/splunk" start --accept-license --answer-yes --no-prompt
+
+# ---------- 8) Write inputs.conf (only monitors files that exist) ----------
+echo "[*] Writing inputs.conf (Fedora 42) -> index=${SPLUNK_INDEX}..."
+INPUTS_FILE="${SPLUNK_HOME}/etc/system/local/inputs.conf"
+
+# Start clean
+printf "%s\n" \
+"# ========= CCDC Fedora 42 UF Inputs =========" \
+"# Auto-add monitors only if file exists" \
+"# Target index: ${SPLUNK_INDEX}" \
+> "$INPUTS_FILE"
+
 add_monitor_if_exists () {
   local path="$1"
   local st="$2"
   if [ -f "$path" ]; then
-    cat >> "$INPUTS_FILE" <<EOF
-
-[monitor://$path]
-disabled = false
-index = ${SPLUNK_INDEX}
-sourcetype = $st
-EOF
+    printf "\n[monitor://%s]\ndisabled = false\nindex = %s\nsourcetype = %s\n" \
+      "$path" "$SPLUNK_INDEX" "$st" >> "$INPUTS_FILE"
     echo "[OK] Monitoring $path"
   else
     echo "[SKIP] Missing $path"
   fi
 }
 
-# Start fresh
-cat > "$INPUTS_FILE" <<EOF
-# ========= CCDC Fedora 42 UF Inputs =========
-# All data goes to index: ${SPLUNK_INDEX}
-EOF
-
-# Auth/system (Fedora often uses /var/log/secure when rsyslog is writing)
+# Auth/system (Fedora may have these if rsyslog is enabled)
 add_monitor_if_exists "/var/log/secure" "linux_secure"
 add_monitor_if_exists "/var/log/messages" "messages"
 
-# Package log
+# Packages
 add_monitor_if_exists "/var/log/dnf.log" "linux_dnf"
 
-# Mail logs
+# Mail logs (if webmail stack installed)
 add_monitor_if_exists "/var/log/maillog" "linux_mail"
 add_monitor_if_exists "/var/log/mail.log" "linux_mail"
 
 # Web logs (nginx or apache)
 add_monitor_if_exists "/var/log/nginx/access.log" "nginx_access"
-add_monitor_if_exists "/var/log/nginx/error.log" "nginx_error"
+add_monitor_if_exists "/var/log/nginx/error.log"  "nginx_error"
 add_monitor_if_exists "/var/log/httpd/access_log" "apache_access"
-add_monitor_if_exists "/var/log/httpd/error_log" "apache_error"
+add_monitor_if_exists "/var/log/httpd/error_log"  "apache_error"
 
 chmod 600 "$INPUTS_FILE"
 echo "[OK] inputs.conf written"
 
+# ---------- 9) Set forward server ----------
 echo "[*] Setting forward-server to ${SPLUNK_IP}:${SPLUNK_REC_PORT}..."
-"$SPLUNK_HOME/bin/splunk" add forward-server "${SPLUNK_IP}:${SPLUNK_REC_PORT}" \
+"${SPLUNK_HOME}/bin/splunk" add forward-server "${SPLUNK_IP}:${SPLUNK_REC_PORT}" \
   -auth "${SPLUNK_ADMIN_USER}:${SPLUNK_ADMIN_PASS}"
 
+# ---------- 10) Enable boot-start (best effort) ----------
 echo "[*] Enabling boot-start..."
-"$SPLUNK_HOME/bin/splunk" enable boot-start || true
+"${SPLUNK_HOME}/bin/splunk" enable boot-start || true
 
+# ---------- 11) Restart UF ----------
 echo "[*] Restarting UF..."
-"$SPLUNK_HOME/bin/splunk" restart
+"${SPLUNK_HOME}/bin/splunk" restart
 
+# ---------- 12) Status ----------
 echo "[*] UF status:"
-"$SPLUNK_HOME/bin/splunk" status || true
+"${SPLUNK_HOME}/bin/splunk" status || true
 
-echo "[DONE] Fedora 42 UF forwarding to ${SPLUNK_IP}:${SPLUNK_REC_PORT} with index=${SPLUNK_INDEX}"
+echo "[DONE] Fedora UF installed and forwarding -> ${SPLUNK_IP}:${SPLUNK_REC_PORT} index=${SPLUNK_INDEX}"
+
