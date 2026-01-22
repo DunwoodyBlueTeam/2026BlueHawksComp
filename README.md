@@ -31,27 +31,40 @@ To verify logs are being pushed, search index="wineventlogs" and look for EventC
 
 ## STEP 4 -
 --> Set up forwarders on Linux <--
-## Run Linux UF Scripts
+Run Linux UF Scripts
 
 ### If curl exists
+-----------------------------------------
 Ubuntu:
 curl -fsSL https://raw.githubusercontent.com/DunwoodyBlueTeam/2026BlueHawksComp/refs/heads/splunk/UbuUF.sh -o UbuUF.sh
+
 chmod +x UbuUF.sh
+
 sudo ./UbuUF.sh
 
+-----------------------------------------
 Fedora:
 curl -fsSL https://raw.githubusercontent.com/DunwoodyBlueTeam/2026BlueHawksComp/refs/heads/splunk/FedUf.sh -o FedUf.sh
+
 chmod +x FedUf.sh
+
 sudo ./FedUf.sh
 
+-----------------------------------------
 ### If curl does NOT exist (use wget)
+-----------------------------------------
 Ubuntu:
 wget -qO UbuUF.sh https://raw.githubusercontent.com/DunwoodyBlueTeam/2026BlueHawksComp/refs/heads/splunk/UbuUF.sh
+
 chmod +x UbuUF.sh
+
 sudo ./UbuUF.sh
 
+-----------------------------------
 Fedora:
 wget -qO FedUf.sh https://raw.githubusercontent.com/DunwoodyBlueTeam/2026BlueHawksComp/refs/heads/splunk/FedUf.sh
+
 chmod +x FedUf.sh
+
 sudo ./FedUf.sh
 
