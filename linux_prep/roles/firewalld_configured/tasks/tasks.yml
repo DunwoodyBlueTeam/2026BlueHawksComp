@@ -21,6 +21,27 @@
   when: ansible_facts['os_family'] == 'RedHat'
   notify: Restart Firewalld
 
+- name: Enable firewalld ICMP-block inversions (firewalld DROP target blocks ICMP, this inverts that)
+  ansible.posix.firewalld:
+    zone: "{{ firewalld_default_zone }}"
+    icmp_block_inversion: true
+    permanent: true
+    state: enabled
+  when: ansible_facts['os_family'] == 'RedHat'
+  notify: Restart Firewalld
+
+- name: Enable firewalld to respond to ICMP as per guidelines)
+  ansible.posix.firewalld:
+    zone: "{{ firewalld_default_zone }}"
+    icmp_block: "{{ item }}"
+    permanent: true
+    state: enabled
+  loop:
+    - echo-request
+    - echo-reply
+  when: ansible_facts['os_family'] == 'RedHat'
+  notify: Restart Firewalld
+
 - name: Firewalld forwarding disabled in internal zone
   ansible.posix.firewalld:
     zone: internal
