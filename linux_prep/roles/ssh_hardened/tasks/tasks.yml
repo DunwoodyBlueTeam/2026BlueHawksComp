@@ -42,31 +42,9 @@
   notify: Validate SSH config
 
 
-- name: Ensure ufw package present on Debian-based systems
-  ansible.builtin.package:
-    name:
-      - ufw
-  when: ansible_facts['os_family'] == 'Debian'
-
-- name: UFW default deny incoming
-  community.general.ufw:
-    default: deny
-    direction: incoming
-    state: enabled
-  when: ansible_facts['os_family'] == 'Debian'
-
-- name: UFW default allow outgoing
-  community.general.ufw:
-    default: allow
-    direction: outgoing
-    state: enabled
-  when: ansible_facts['os_family'] == 'Debian'
-
-- name: UFW default deny routed
-  community.general.ufw:
-    default: deny
-    direction: routed
-    state: enabled
+- name: Run tasks for configuring ufw
+  ansible.builtin.include_role:
+    name: ufw_configured
   when: ansible_facts['os_family'] == 'Debian'
 
 - name: UFW allow tcp port "{{ ssh_port }}" for SSH from "{{ linux_private_network_cidr }}"
