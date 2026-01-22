@@ -15,7 +15,7 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 # ---------- 2) PROMPT: Splunk Enterprise IP ----------
-read -r -p "Enter Splunk Enterprise (Indexer) IP (example: 10.0.0.70): " SPLUNK_IP
+read -r -p "Enter Splunk Enterprise (Indexer) IP: " SPLUNK_IP
 if [ -z "$SPLUNK_IP" ]; then
   echo "[ERROR] Splunk IP cannot be empty."
   exit 1
