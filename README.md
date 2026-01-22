@@ -9,7 +9,7 @@ Reset root/sysadmin password
 ---
 
 ## STEP 2 -
-Change admin(splunkweb) password, Add listening port (9997), add custom indexes (so far just "wineventlogs")
+Change admin(splunkweb) password, Add listening port (9997), add custom indexes ("wineventlogs" && "linuxlogs)
 ---
 
 ## STEP 3 – 
@@ -28,3 +28,5 @@ Invoke-WebRequest https://raw.githubusercontent.com/DunwoodyBlueTeam/2026BlueHaw
 .\WinUF.ps1 -IndexerIp <SPLUNK_ENTERPRISE_IP>
 ```
 To verify logs are being pushed, search index="wineventlogs" and look for EventCode=777. Will be an Application log. *WILL NOT WORK IF CUSTOM INDEX IS NOT CREATED!
+
+## STEP 4 -
