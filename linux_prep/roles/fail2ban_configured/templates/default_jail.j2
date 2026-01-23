@@ -1,0 +1,17 @@
+[DEFAULT]
+bantime = 10m
+findtime = 10m
+maxretry = 10
+
+# Enable incremental ban time for repeat offenders
+bantime.increment = true
+
+# Multiplier values for each subsequent ban
+bantime.multipliers = 1 2 4 8 16 32 64
+
+# Most modern systems use systemd now
+backend = systemd
+
+# Fedora/RedHat systems were not respecting fail2ban in testing without this.
+# My guess for the reason is something with firewalld, perhaps when the source is in the "internal" subnet.
+banaction = iptables-multiport
