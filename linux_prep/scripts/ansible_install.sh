@@ -37,6 +37,7 @@ do
 done
 set -euo pipefail
 
+mkdir ~/ansible_logs || echo "Skipping mkdir ~/ansible_logs"
 
 mkdir ~/env || echo "Skipping mkdir ~/env"
 python3 -m venv ~/env
