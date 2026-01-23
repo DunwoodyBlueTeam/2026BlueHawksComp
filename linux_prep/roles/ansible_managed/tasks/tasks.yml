@@ -13,6 +13,13 @@
     password: '!'
     uid: 2000
 
+- name: Ensure nobody else can access the home directory belonging to "{{ username }}"
+  ansible.builtin.file:
+    path: "/home/{{ username }}"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: 0700
+
 - name: Run tasks for removing unwanted users from group "{{ username }}"
   ansible.builtin.include_role:
     name: remove_unwanted_users_from_group
