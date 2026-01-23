@@ -87,3 +87,21 @@
     - internal
   when: ansible_facts['os_family'] == 'RedHat'
   notify: Restart Firewalld
+
+
+- ansible.builtin.import_role:
+    name: fail2ban_configured
+
+- name: SSH fail2ban jail configured
+  ansible.builtin.blockinfile:
+    block: "{{ lookup('ansible.builtin.template', 'fail2ban_jail.j2') }}"
+    # https://stackoverflow.com/questions/66460500/performing-multiple-ansible-builtin-blockinfile-tasks-on-the-same-file
+    marker: "# {mark} ANSIBLE MANAGED BLOCK FOR SSH CONFIG"
+    path: "/etc/fail2ban/jail.local"
+    create: true
+    owner: root
+    group: root
+    mode: 0640
+    backup: yes
+    #validate: /usr/bin/fail2ban-client -d %s
+  notify: Restart fail2ban

@@ -1,0 +1,8 @@
+[sshd]
+bantime = 20m
+findtime = 20m
+maxretry = 10
+port = {{ ssh_port }}
+logpath = %(sshd_log)s
+backend = %(sshd_backend)s
+enabled = true
