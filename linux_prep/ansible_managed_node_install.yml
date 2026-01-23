@@ -6,6 +6,10 @@
         vars:
           username: ansible
           ssh_public_key: "/home/ansible-control/.ssh/id_ed25519.pub"
+      # If we need to change the internal network cidr at the comp.
+      #- role: firewalld_configured
+      #  vars:
+      #    internal_network_cidr: 172.20.242.0/24
       - role: ssh_hardened
         vars:
           ssh_port: 22

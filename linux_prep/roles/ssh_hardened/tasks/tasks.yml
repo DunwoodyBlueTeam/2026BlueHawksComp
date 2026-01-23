@@ -58,14 +58,8 @@
   when: ansible_facts['os_family'] == 'Debian'
 
 
-
-# Included here rather than playbook in-case of lockout before setting the ports
-- name: Run tasks for configuring firewalld
-  ansible.builtin.include_role:
+- ansible.builtin.import_role:
     name: firewalld_configured
-  vars:
-    internal_network_cidr: "{{ linux_private_network_cidr }}"
-  when: ansible_facts['os_family'] == 'RedHat'
 
 - name: Firewalld allow tcp port "{{ ssh_port }}" for SSH in internal zone
   ansible.posix.firewalld:
