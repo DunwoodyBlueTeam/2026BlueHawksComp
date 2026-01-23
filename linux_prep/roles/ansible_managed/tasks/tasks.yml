@@ -35,3 +35,20 @@
     state: present
     exclusive: true
     manage_dir: true # Already default but very important. Ensures .ssh directory exists with proper owner and permissions.
+
+
+# At this time I cannot find it in any Oracle Linux friendly repo
+- name: Install tcptrack everywhere but Oracle Linux
+  ansible.builtin.package:
+    name:
+      - tcptrack
+  when: ansible_facts['distribution'] != 'OracleLinux'
+
+- name: Desired additional optional packages installed
+  ansible.builtin.package:
+    name:
+      - "{{ (ansible_facts['os_family'] == 'Debian') | ansible.builtin.ternary('netcat-traditional', 'nmap-ncat') }}"
+      - tree
+      - htop
+      - screen
+      - aide
