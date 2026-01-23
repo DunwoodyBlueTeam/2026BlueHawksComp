@@ -42,10 +42,8 @@
   notify: Validate SSH config
 
 
-- name: Run tasks for configuring ufw
-  ansible.builtin.include_role:
+- ansible.builtin.import_role:
     name: ufw_configured
-  when: ansible_facts['os_family'] == 'Debian'
 
 - name: UFW allow tcp port "{{ ssh_port }}" for SSH from "{{ linux_private_network_cidr }}"
   community.general.ufw:
