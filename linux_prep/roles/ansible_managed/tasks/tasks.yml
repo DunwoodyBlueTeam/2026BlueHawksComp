@@ -25,7 +25,7 @@
     dest: /etc/sudoers
     state: present
     regexp: "^%{{ username }}"
-    line: "%{{ username }} ALL=(ALL) ALL"
+    line: "%{{ username }} ALL=NOPASSWD: ALL"
     validate: 'visudo -cf %s'
 
 - name: Set authorized key for SSH
