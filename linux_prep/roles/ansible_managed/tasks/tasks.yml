@@ -44,6 +44,13 @@
     manage_dir: true # Already default but very important. Ensures .ssh directory exists with proper owner and permissions.
 
 
+- name: Enable EPEL release on RedHat-based systems
+  ansible.builtin.package:
+    name: epel-release
+    state: present
+#  when: ansible_facts['distribution'] == 'OracleLinux'
+  when: ansible_facts['os_family'] == 'RedHat' and ansible_facts['distribution'] != 'Fedora'
+
 # At this time I cannot find it in any Oracle Linux friendly repo
 - name: Install tcptrack everywhere but Oracle Linux
   ansible.builtin.package:
