@@ -4,13 +4,13 @@ param(
     [int]$Hours = 2  # How many hours back to analyze
 )
 
-Write-Host "=== Security Log Analysis ===" -ForegroundColor Cyan
-Write-Host "Analyzing logs from the last $Hours hour(s)" -ForegroundColor Yellow
+Write-Host "=== Security Log Analysis ===" 
+Write-Host "Analyzing logs from the last $Hours hour(s)" 
 
 $startTime = (Get-Date).AddHours(-$Hours)
 
 # ===== FAILED LOGON ATTEMPTS =====
-Write-Host "`n=== Failed Logon Attempts (Event ID 4625) ===" -ForegroundColor Red
+Write-Host "`n=== Failed Logon Attempts (Event ID 4625) ===" 
 try {
     $failedLogons = Get-WinEvent -FilterHashtable @{
         LogName = 'Security'
@@ -31,7 +31,7 @@ try {
         }
         
         $failedSummary | Format-Table -AutoSize
-        Write-Host "Total failed logons: $($failedLogons.Count)" -ForegroundColor Yellow
+        Write-Host "Total failed logons: $($failedLogons.Count)" 
         
         # Group by user
         Write-Host "`nFailed logons by user:" -ForegroundColor Yellow
@@ -39,14 +39,14 @@ try {
             Select-Object Count, Name | Format-Table -AutoSize
             
     } else {
-        Write-Host "No failed logons detected" -ForegroundColor Green
+        Write-Host "No failed logons detected" 
     }
 } catch {
-    Write-Host "Error reading failed logon events: $_" -ForegroundColor Red
+    Write-Host "Error reading failed logon events: $_" 
 }
 
 # ===== SUCCESSFUL LOGONS =====
-Write-Host "`n=== Successful Logons (Event ID 4624) ===" -ForegroundColor Green
+Write-Host "`n=== Successful Logons (Event ID 4624) ===" 
 try {
     $successLogons = Get-WinEvent -FilterHashtable @{
         LogName = 'Security'
@@ -67,14 +67,14 @@ try {
         
         $logonSummary | Format-Table -AutoSize
     } else {
-        Write-Host "No successful logons detected" -ForegroundColor Yellow
+        Write-Host "No successful logons detected" 
     }
 } catch {
-    Write-Host "Error reading successful logon events: $_" -ForegroundColor Red
+    Write-Host "Error reading successful logon events: $_" 
 }
 
 # ===== ACCOUNT CHANGES =====
-Write-Host "`n=== Account Changes (Created/Deleted/Modified) ===" -ForegroundColor Yellow
+Write-Host "`n=== Account Changes (Created/Deleted/Modified) ===" 
 try {
     $accountChanges = Get-WinEvent -FilterHashtable @{
         LogName = 'Security'
@@ -105,14 +105,14 @@ try {
             }
         } | Format-Table -AutoSize
     } else {
-        Write-Host "No account changes detected" -ForegroundColor Green
+        Write-Host "No account changes detected" 
     }
 } catch {
-    Write-Host "Error reading account change events: $_" -ForegroundColor Red
+    Write-Host "Error reading account change events: $_" 
 }
 
 # ===== PRIVILEGE USE =====
-Write-Host "`n=== Privilege Escalation/Use (Event ID 4672) ===" -ForegroundColor Yellow
+Write-Host "`n=== Privilege Escalation/Use (Event ID 4672) ===" 
 try {
     $privUse = Get-WinEvent -FilterHashtable @{
         LogName = 'Security'
@@ -130,14 +130,14 @@ try {
         } | Where-Object {$_.SubjectUserName -notmatch '^(SYSTEM|LOCAL SERVICE|NETWORK SERVICE)'} | 
             Format-Table -AutoSize
     } else {
-        Write-Host "No privilege use events detected" -ForegroundColor Green
+        Write-Host "No privilege use events detected" 
     }
 } catch {
-    Write-Host "Error reading privilege events: $_" -ForegroundColor Red
+    Write-Host "Error reading privilege events: $_" 
 }
 
 # ===== PROCESS CREATION =====
-Write-Host "`n=== Suspicious Process Creation (Event ID 4688) ===" -ForegroundColor Red
+Write-Host "`n=== Suspicious Process Creation (Event ID 4688) ===" 
 try {
     $processes = Get-WinEvent -FilterHashtable @{
         LogName = 'Security'
@@ -164,19 +164,19 @@ try {
         
         if ($suspiciousProcesses) {
             $suspiciousProcesses | Format-Table -Wrap -AutoSize
-            Write-Host "Found $($suspiciousProcesses.Count) suspicious processes" -ForegroundColor Red
+            Write-Host "Found $($suspiciousProcesses.Count) suspicious processes" 
         } else {
-            Write-Host "No suspicious processes detected" -ForegroundColor Green
+            Write-Host "No suspicious processes detected" 
         }
     } else {
-        Write-Host "Process auditing may not be enabled (Event 4688 not found)" -ForegroundColor Yellow
+        Write-Host "Process auditing may not be enabled (Event 4688 not found)" 
     }
 } catch {
-    Write-Host "Error reading process events: $_" -ForegroundColor Red
+    Write-Host "Error reading process events: $_" 
 }
 
 # ===== SYSTEM LOG ERRORS =====
-Write-Host "`n=== Critical System Errors ===" -ForegroundColor Red
+Write-Host "`n=== Critical System Errors ===" 
 try {
     $systemErrors = Get-WinEvent -FilterHashtable @{
         LogName = 'System'
@@ -187,24 +187,25 @@ try {
     if ($systemErrors) {
         $systemErrors | Select-Object TimeCreated, Id, ProviderName, Message | Format-List
     } else {
-        Write-Host "No critical system errors" -ForegroundColor Green
+        Write-Host "No critical system errors" 
     }
 } catch {
-    Write-Host "Error reading system log: $_" -ForegroundColor Red
+    Write-Host "Error reading system log: $_" 
 }
 
 # Export all findings
 $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
-Write-Host "`n=== Exporting Results ===" -ForegroundColor Cyan
+Write-Host "`n=== Exporting Results ===" 
 
 if ($failedLogons) {
-    $failedSummary | Export-Csv -Path "LogAnalysis_FailedLogons_$timestamp.csv" -NoTypeInformation
+    $failedSummary | Export-Csv -Path "C:\CCDC-DocsLogAnalysis_FailedLogons_$timestamp.csv" -NoTypeInformation
 }
 if ($logonSummary) {
-    $logonSummary | Export-Csv -Path "LogAnalysis_SuccessLogons_$timestamp.csv" -NoTypeInformation
+    $logonSummary | Export-Csv -Path "C:\CCDC-DocsLogAnalysis_SuccessLogons_$timestamp.csv" -NoTypeInformation
 }
 if ($accountChanges) {
-    $accountChanges | Export-Csv -Path "LogAnalysis_AccountChanges_$timestamp.csv" -NoTypeInformation
+    $accountChanges | Export-Csv -Path "C:\CCDC-DocsLogAnalysis_AccountChanges_$timestamp.csv" -NoTypeInformation
 }
+
 
 Write-Host "Analysis complete! Results exported to LogAnalysis_*_$timestamp.csv" -ForegroundColor Green
