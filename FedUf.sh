@@ -110,6 +110,12 @@ add_monitor_if_exists "/var/log/nginx/error.log"  "nginx_error"
 add_monitor_if_exists "/var/log/httpd/access_log" "apache_access"
 add_monitor_if_exists "/var/log/httpd/error_log"  "apache_error"
 
+# Add default host setting-> host name should now be comp name vs enterprise ip
+echo "" >> "$INPUTS_FILE"
+echo "[default]" >> "$INPUTS_FILE"
+echo "host = $(hostname)" >> "$INPUTS_FILE"
+
+
 chmod 600 "$INPUTS_FILE"
 echo "[OK] inputs.conf written"
 
