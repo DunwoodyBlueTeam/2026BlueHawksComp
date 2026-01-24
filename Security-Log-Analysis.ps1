@@ -34,7 +34,7 @@ try {
         Write-Host "Total failed logons: $($failedLogons.Count)" 
         
         # Group by user
-        Write-Host "`nFailed logons by user:" -ForegroundColor Yellow
+        Write-Host "`nFailed logons by user:" 
         $failedSummary | Group-Object TargetUserName | Sort-Object Count -Descending | 
             Select-Object Count, Name | Format-Table -AutoSize
             
@@ -209,3 +209,4 @@ if ($accountChanges) {
 
 
 Write-Host "Analysis complete! Results exported to LogAnalysis_*_$timestamp.csv" -ForegroundColor Green
+
