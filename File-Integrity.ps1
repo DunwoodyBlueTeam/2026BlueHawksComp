@@ -1,11 +1,12 @@
 # Run as Administrator
 
+$value = Read-Host "Please enter baseline or check to begin script: "  # baseline or check
 param(
-    [string]$Mode = "baseline",  # baseline or check
-    [string]$BaselineFile = ".\file_baseline.csv"
+    [string]$Mode = $value, 
+    [string]$BaselineFile = "C:\CCDC-Docs\file_baseline.csv"
 )
 
-Write-Host "=== File Integrity Monitoring ===" -ForegroundColor Cyan
+Write-Host "=== File Integrity Monitoring ===" 
 
 # Critical directories to monitor
 $criticalPaths = @(
@@ -28,7 +29,7 @@ function Get-FileHashes {
     
     foreach ($path in $Paths) {
         if (Test-Path $path) {
-            Write-Host "Scanning: $path" -ForegroundColor Yellow
+            Write-Host "Scanning: $path" 
             
             foreach ($ext in $criticalExtensions) {
                 $files = Get-ChildItem -Path $path -Filter $ext -File -ErrorAction SilentlyContinue
@@ -47,7 +48,7 @@ function Get-FileHashes {
                             LastAccessTime = $file.LastAccessTime
                         }
                     } catch {
-                        Write-Host "  Error hashing: $($file.FullName)" -ForegroundColor Red
+                        Write-Host "  Error hashing: $($file.FullName)" 
                     }
                 }
             }
@@ -58,25 +59,25 @@ function Get-FileHashes {
 }
 
 if ($Mode -eq "baseline") {
-    Write-Host "`nCreating baseline..." -ForegroundColor Green
+    Write-Host "`nCreating baseline..." 
     
     $baseline = Get-FileHashes -Paths $criticalPaths
     $baseline | Export-Csv -Path $BaselineFile -NoTypeInformation
     
-    Write-Host "Baseline created with $($baseline.Count) files" -ForegroundColor Green
-    Write-Host "Saved to: $BaselineFile" -ForegroundColor Green
+    Write-Host "Baseline created with $($baseline.Count) files" 
+    Write-Host "Saved to: $BaselineFile" 
     
 } elseif ($Mode -eq "check") {
     
     if (-not (Test-Path $BaselineFile)) {
-        Write-Host "Baseline file not found! Run with -Mode baseline first." -ForegroundColor Red
+        Write-Host "Baseline file not found! Run with -Mode baseline first." 
         exit
     }
     
-    Write-Host "`nLoading baseline..." -ForegroundColor Yellow
+    Write-Host "`nLoading baseline..." 
     $baseline = Import-Csv -Path $BaselineFile
     
-    Write-Host "Checking current state..." -ForegroundColor Yellow
+    Write-Host "Checking current state..." 
     $current = Get-FileHashes -Paths $criticalPaths
     
     # Create hash tables for quick lookup
@@ -91,25 +92,25 @@ if ($Mode -eq "baseline") {
     }
     
     # Check for new files
-    Write-Host "`n=== NEW FILES ===" -ForegroundColor Red
+    Write-Host "`n=== NEW FILES ===" 
     $newFiles = $current | Where-Object { -not $baselineHash.ContainsKey($_.Path) }
     if ($newFiles) {
         $newFiles | Select-Object Path, LastWriteTime | Format-Table -AutoSize
     } else {
-        Write-Host "None detected" -ForegroundColor Green
+        Write-Host "None detected" 
     }
     
     # Check for deleted files
-    Write-Host "`n=== DELETED FILES ===" -ForegroundColor Red
+    Write-Host "`n=== DELETED FILES ===" 
     $deletedFiles = $baseline | Where-Object { -not $currentHash.ContainsKey($_.Path) }
     if ($deletedFiles) {
         $deletedFiles | Select-Object Path | Format-Table -AutoSize
     } else {
-        Write-Host "None detected" -ForegroundColor Green
+        Write-Host "None detected" 
     }
     
     # Check for modified files
-    Write-Host "`n=== MODIFIED FILES ===" -ForegroundColor Red
+    Write-Host "`n=== MODIFIED FILES ===" 
     $modifiedFiles = @()
     foreach ($file in $current) {
         if ($baselineHash.ContainsKey($file.Path)) {
@@ -129,18 +130,18 @@ if ($Mode -eq "baseline") {
     if ($modifiedFiles) {
         $modifiedFiles | Format-Table -AutoSize
     } else {
-        Write-Host "None detected" -ForegroundColor Green
+        Write-Host "None detected" 
     }
     
     # Export results
     $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
-    $newFiles | Export-Csv -Path "FIM_NewFiles_$timestamp.csv" -NoTypeInformation
-    $deletedFiles | Export-Csv -Path "FIM_DeletedFiles_$timestamp.csv" -NoTypeInformation
-    $modifiedFiles | Export-Csv -Path "FIM_ModifiedFiles_$timestamp.csv" -NoTypeInformation
+    $newFiles | Export-Csv -Path "C:\CCDC-Docs\FIM_NewFiles_$timestamp.csv" -NoTypeInformation
+    $deletedFiles | Export-Csv -Path "C:\CCDC-Docs\FIM_DeletedFiles_$timestamp.csv" -NoTypeInformation
+    $modifiedFiles | Export-Csv -Path "C:\CCDC-Docs\FIM_ModifiedFiles_$timestamp.csv" -NoTypeInformation
     
-    Write-Host "`nResults exported to FIM_*_$timestamp.csv" -ForegroundColor Cyan
+    Write-Host "`nResults exported to FIM_*_$timestamp.csv" 
 }
 
-Write-Host "`nUsage:" -ForegroundColor Yellow
-Write-Host "  Create baseline: .\script.ps1 -Mode baseline" -ForegroundColor Gray
-Write-Host "  Check integrity: .\script.ps1 -Mode check" -ForegroundColor Gray
+Write-Host "`nUsage:" 
+Write-Host "  Create baseline: .\script.ps1 -Mode baseline" 
+Write-Host "  Check integrity: .\script.ps1 -Mode check" 
