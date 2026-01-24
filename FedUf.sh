@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# FedUf.sh (Fedora 42)
+# FedUf.sh - Fedora 
 # Installs Splunk Universal Forwarder, seeds UF admin user,
 # monitors high-value logs if they exist, and forwards to
 # SPLUNK_IP:9997 into index=linuxlogs.
@@ -66,7 +66,7 @@ printf "%s\n" \
 
 chmod 600 "${USERSEED_DIR}/user-seed.conf"
 
-# ---------- 7) Start UF + accept license ----------
+# ---------- 7) Start UF &&& accept license ----------
 echo "[*] Starting UF and accepting license..."
 "${SPLUNK_HOME}/bin/splunk" start --accept-license --answer-yes --no-prompt
 
