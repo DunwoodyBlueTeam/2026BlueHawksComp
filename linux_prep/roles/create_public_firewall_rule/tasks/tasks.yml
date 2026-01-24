@@ -1,0 +1,28 @@
+- ansible.builtin.import_role:
+    name: ufw_configured
+
+- name: UFW allow "{{ configured_service }}" on port "{{ configured_port }}"
+  community.general.ufw:
+    rule: allow
+    port: "{{ configured_port }}"
+    comment: "{{ configured_service }}"
+    state: enabled
+  when: ansible_facts['os_family'] == 'Debian'
+
+
+- ansible.builtin.import_role:
+    name: firewalld_configured
+
+- name: Firewalld allow "{{ configured_service }}" on port "{{ configured_port }}"
+  ansible.posix.firewalld:
+    zone: "{{ item }}"
+    permanent: true
+    # Ideally know when firewalld recognizes the service and no alt port is specified
+    #service: "{{ configured_service }}"
+    port: "{{ configured_port }}"
+    state: enabled
+  loop:
+    - "{{ firewalld_default_zone }}"
+    - internal
+  when: ansible_facts['os_family'] == 'RedHat'
+  notify: Restart Firewalld
