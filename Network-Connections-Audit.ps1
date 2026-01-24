@@ -27,11 +27,11 @@ Get-NetFirewallProfile | Select-Object Name, Enabled | Format-Table -AutoSize
 # Export connections
 $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
 Get-NetTCPConnection | Export-Csv -Path "C:\CCDC-Docs\NetworkConnections_$timestamp.csv" -NoTypeInformation
-Write-Host "`nConnections exported to NetworkConnections_$timestamp.csv" -ForegroundColor Green
-
+Write-Host "`nConnections exported to NetworkConnections_$timestamp.csv" 
 # Show suspicious ports (common backdoor ports)
 $suspiciousPorts = @(4444, 5555, 6666, 31337, 12345, 1337, 3389)
 Write-Host "`nChecking for connections on suspicious ports:" 
 Get-NetTCPConnection | Where-Object {$suspiciousPorts -contains $_.LocalPort -or $suspiciousPorts -contains $_.RemotePort} | 
 
     Format-Table -AutoSize
+
