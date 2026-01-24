@@ -5,6 +5,8 @@
   community.general.ufw:
     rule: allow
     port: "{{ configured_port }}"
+    # Ideally recognize when we want tcp and udp
+    proto: "{{ configured_protocol }}"
     comment: "{{ configured_service }}"
     state: enabled
   when: ansible_facts['os_family'] == 'Debian'
@@ -19,7 +21,7 @@
     permanent: true
     # Ideally know when firewalld recognizes the service and no alt port is specified
     #service: "{{ configured_service }}"
-    port: "{{ configured_port }}"
+    port: "{{ configured_port }}/{{ configured_protocol }}"
     state: enabled
   loop:
     - "{{ firewalld_default_zone }}"
