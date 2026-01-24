@@ -1,0 +1,15 @@
+- name: Run tasks for creating http firewall rule
+  ansible.builtin.include_role:
+    name: create_public_firewall_rule
+  vars:
+    configured_service: "http"
+    configured_port: "80"
+    configured_protocol: "tcp"
+
+- name: Run tasks for creating https firewall rule
+  ansible.builtin.include_role:
+    name: create_public_firewall_rule
+  vars:
+    configured_service: "https"
+    configured_port: "443"
+    configured_protocol: "tcp"
