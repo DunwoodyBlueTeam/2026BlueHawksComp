@@ -20,7 +20,7 @@ Get-LocalUser | Where-Object {$_.Enabled -eq $false} | Select-Object Name
 
 # Export to CSV for documentation
 $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
-Get-LocalUser | Export-Csv -Path "CCDC-Docs\UserAudit_$timestamp.csv" -NoTypeInformation
+Get-LocalUser | Export-Csv -Path "C:\CCDC-Docs\UserAudit_$timestamp.csv" -NoTypeInformation
 Write-Host "`nAudit exported to CCDC-Docs\UserAudit_$timestamp.csv" 
 
 # Prompt for actions
@@ -35,4 +35,5 @@ if ($action -eq 'y') {
     }
 
 }
+
 
