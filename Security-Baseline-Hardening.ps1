@@ -48,7 +48,7 @@ foreach ($svc in $servicesToDisable) {
     try {
         Stop-Service -Name $svc -Force -ErrorAction SilentlyContinue
         Set-Service -Name $svc -StartupType Disabled -ErrorAction SilentlyContinue
-        Write-Host "  - Disabled $svc" -ForegroundColor Gray
+        Write-Host "  - Disabled $svc" 
     } catch {
         Write-Host "  - Could not disable $svc" 
     }
@@ -65,4 +65,5 @@ Update-MpSignature
 Write-Host "`n=== Hardening Complete ===" 
 
 Write-Host "Review changes and test critical services!" 
+
 
