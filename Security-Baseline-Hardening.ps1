@@ -28,6 +28,8 @@ net accounts /uniquepw:5
 # Disable guest account
 Write-Host "[+] Disabling Guest account..." 
 Disable-LocalUser -Name "Guest" -ErrorAction SilentlyContinue
+    Write-Host "`nChecking status of Guest account"
+    Get-ADUser -Identity "Guest" -Properties Enabled,MemberOfGroup
 
 # Enable audit logging
 Write-Host "[+] Enabling audit policies..." 
@@ -63,3 +65,4 @@ Update-MpSignature
 Write-Host "`n=== Hardening Complete ===" 
 
 Write-Host "Review changes and test critical services!" 
+
