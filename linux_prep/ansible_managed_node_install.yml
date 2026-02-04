@@ -16,7 +16,7 @@
           linux_private_network_cidr: 172.20.242.0/24
       #- role: webserver_managed
 # cleanup after comp. here if we need it.
-#  - name: Webserver
-#    hosts: econ
-#    roles:
-#      - role: webserver_managed
+  - name: Webserver
+    hosts: ecom
+    roles:
+      - role: webserver_managed
