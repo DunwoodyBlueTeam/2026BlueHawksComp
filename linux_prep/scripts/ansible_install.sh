@@ -45,9 +45,6 @@ source ~/env/bin/activate
 pip install --upgrade pip
 pip install ansible
 
-# Probably unnecessary
-ansible-galaxy collection install ansible.posix
-
 export ANSIBLE_CONFIG=$DIRECTORY/scripts/initial_ansible.cfg
 until ansible-playbook $DIRECTORY/ansible_managed_node_install.yml
 do
