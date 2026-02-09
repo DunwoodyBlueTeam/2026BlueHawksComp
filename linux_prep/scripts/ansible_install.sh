@@ -9,6 +9,19 @@ then
   exit 1
 fi
 
+# Source - https://stackoverflow.com/a/29436423
+# Posted by Tiago Lopo, modified by community. See post 'Timeline' for change history
+# Retrieved 2026-02-04, License - CC BY-SA 3.0
+function yes_or_no {
+    while true; do
+        read -p "$* [y/n]: " yn
+        case $yn in
+            [Yy]*) return 0  ;;  
+            [Nn]*) return 1  ;;
+        esac
+    done
+}
+
 DIRECTORY=~/repo
 SSH_HOSTS=~/.ssh/known_hosts
 set -euo pipefail
@@ -20,6 +33,10 @@ IP_ADDRESSES=$(grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}' 
 
 touch $SSH_HOSTS 
 chmod go-rwx $SSH_HOSTS
+
+yes_or_no "Copy SSH key to remote hosts?"
+COPY_BOOL=$?
+echo $COPY_BOOL
 
 set +euo pipefail
 for IP in $IP_ADDRESSES
@@ -34,6 +51,11 @@ do
 
   echo "Adding ${IP} to ${SSH_HOSTS}"
   ssh-keyscan -H $IP >> $SSH_HOSTS 2> /dev/null
+
+  if [ $COPY_BOOL -eq 0 ]
+  then
+    ssh-copy-id "sysadmin@${IP}"
+  fi
 done
 set -euo pipefail
 
