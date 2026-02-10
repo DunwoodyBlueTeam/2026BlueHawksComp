@@ -77,8 +77,10 @@
     path: /root/.ssh/authorized_keys
     state: absent
 
+
 - name: Evil script not running
   ansible.builtin.service:
     name: startup_check 
     enabled: false
     state: stopped
+  failed_when: false
