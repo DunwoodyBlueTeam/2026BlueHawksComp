@@ -4,6 +4,12 @@
       - firewalld
   when: ansible_facts['os_family'] == 'RedHat'
 
+- name: Firewalld running
+  ansible.builtin.service:
+    name: firewalld
+    state: started
+  when: ansible_facts['os_family'] == 'RedHat'
+
 - name: Firewalld set default zone to "{{ firewalld_default_zone }}"
   ansible.builtin.command: "firewall-cmd --set-default-zone={{ firewalld_default_zone }}"
   register: command_result
