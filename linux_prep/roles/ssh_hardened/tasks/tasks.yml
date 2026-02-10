@@ -1,6 +1,6 @@
 - name: Set our config at "{{ sshd_config_d_path }}{{ sshd_config_d_name }}"
   ansible.builtin.template:
-    src: bluehawks_ssh_config.j2
+    src: custom_ssh_config.j2
     dest: "{{ sshd_config_d_path }}{{ sshd_config_d_name }}"
     owner: root
     group: root
