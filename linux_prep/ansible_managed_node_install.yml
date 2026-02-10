@@ -20,3 +20,7 @@
     hosts: ecom
     roles:
       - role: webserver_managed
+  - name: Webmail
+    hosts: webmail
+    roles:
+      - role: webmail_managed
