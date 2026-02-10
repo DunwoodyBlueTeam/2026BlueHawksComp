@@ -42,9 +42,6 @@
   notify: Validate SSH config
 
 
-- ansible.builtin.import_role:
-    name: ufw_configured
-
 - name: UFW allow tcp port "{{ ssh_port }}" for SSH from "{{ linux_private_network_cidr }}"
   community.general.ufw:
     rule: allow
@@ -54,6 +51,9 @@
     comment: ssh
     state: enabled
   when: ansible_facts['os_family'] == 'Debian'
+
+- ansible.builtin.import_role:
+    name: ufw_configured
 
 
 - ansible.builtin.import_role:
