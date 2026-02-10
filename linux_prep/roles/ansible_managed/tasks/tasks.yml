@@ -66,3 +66,13 @@
       - htop
       - screen
       - aide
+
+- name: Ensure no SSH keys for sysadmin
+  ansible.builtin.file:
+    path: /home/sysadmin/.ssh/authorized_keys
+    state: absent
+
+- name: Ensure no SSH keys for root
+  ansible.builtin.file:
+    path: /root/.ssh/authorized_keys
+    state: absent
