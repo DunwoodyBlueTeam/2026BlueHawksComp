@@ -1,0 +1,4 @@
+---
+- { import_tasks: tasks.yml, become: yes}
+# https://stackoverflow.com/questions/39183100/define-become-yes-per-role-with-ansible#39184357
+

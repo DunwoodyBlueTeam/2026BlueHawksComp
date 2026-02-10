@@ -1,0 +1,71 @@
+- name: Run tasks for creating splunk http firewall rule
+  ansible.builtin.include_role:
+    name: create_public_firewall_rule
+  vars:
+    configured_service: "splunk http"
+    configured_port: "{{ splunk_http_port }}"
+    configured_protocol: "tcp"
+
+- name: Ensure "{{ windows_network_zone_name }}" zone present
+  ansible.posix.firewalld:
+    zone: "{{ windows_network_zone_name }}"
+    state: present
+    permanent: true
+  when: ansible_facts['os_family'] == 'RedHat'
+  notify: Restart Firewalld
+
+- name: Firewalld set target to DROP (drop packets that don't match a rule) for "{{ windows_network_zone_name }}" zone
+  ansible.posix.firewalld:
+    target: DROP
+    zone: "{{ windows_network_zone_name }}"
+    permanent: true
+    state: enabled
+  when: ansible_facts['os_family'] == 'RedHat'
+  notify: Restart Firewalld
+
+- name: Firewalld forwarding disabled in "{{ windows_network_zone_name }}"  zone
+  ansible.posix.firewalld:
+    zone: "{{ windows_network_zone_name }}" 
+    permanent: true
+    forward: false
+    state: enabled
+  when: ansible_facts['os_family'] == 'RedHat'
+  notify: Restart Firewalld
+
+- name: Firewalld allow traffic from devices in "{{ windows_network_zone_name }}" zone
+  ansible.posix.firewalld:
+    zone: "{{ windows_network_zone_name }}"
+    permanent: true
+    source: "{{ item }}"
+    state: enabled
+  loop:
+    - 172.25.22.155
+    - 172.25.22.140
+    - 172.25.22.162
+    - 172.25.22.144
+  when: ansible_facts['os_family'] == 'RedHat'
+  notify: Restart Firewalld
+
+- name: Firewalld allow tcp port "{{ splunk_port }}" for splunk forwarding in zones
+  ansible.posix.firewalld:
+    zone: "{{ item }}"
+    permanent: true
+    port: "{{ splunk_port }}/tcp"
+    state: enabled
+  loop:
+      - internal
+      - "{{ windows_network_zone_name }}" 
+  when: ansible_facts['os_family'] == 'RedHat'
+  notify: Restart Firewalld
+
+- name: Firewalld allow tcp port "{{ splunk_http_port }}" for splunk http in zones
+  ansible.posix.firewalld:
+    zone: "{{ item }}"
+    permanent: true
+    port: "{{ splunk_http_port }}/tcp"
+    state: enabled
+  loop:
+      - internal
+      - "{{ windows_network_zone_name }}" 
+  when: ansible_facts['os_family'] == 'RedHat'
+  notify: Restart Firewalld

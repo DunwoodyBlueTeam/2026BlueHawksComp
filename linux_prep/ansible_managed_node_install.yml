@@ -24,3 +24,7 @@
     hosts: webmail
     roles:
       - role: webmail_managed
+  - name: Splunk
+    hosts: splunk
+    roles:
+      - role: splunk_managed
