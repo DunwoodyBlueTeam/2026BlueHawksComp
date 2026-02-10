@@ -8,6 +8,7 @@
   ansible.builtin.service:
     name: firewalld
     state: started
+    enabled: true
   when: ansible_facts['os_family'] == 'RedHat'
 
 - name: Firewalld set default zone to "{{ firewalld_default_zone }}"
