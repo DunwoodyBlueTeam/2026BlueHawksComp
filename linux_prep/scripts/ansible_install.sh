@@ -3,6 +3,8 @@
 # Description: Install ansible
 # Steps: Make ssh key, get ssh hostkeys, makes python virtual environment, installs ansible to the virtual environment.
 
+REMOTE_USER=sysadmin
+
 if [ $(whoami) != "ansible-control" ];
 then
   echo "Please install run setup.sh first!"
@@ -53,7 +55,7 @@ do
 
   if [ $COPY_BOOL -eq 0 ]
   then
-    ssh-copy-id "sysadmin@${IP}"
+    ssh-copy-id "${REMOTE_USER}@${IP}"
   fi
 done
 set -euo pipefail
