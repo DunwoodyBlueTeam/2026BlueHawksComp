@@ -22,6 +22,9 @@ function yes_or_no {
     done
 }
 
+yes_or_no "Copy SSH key to remote hosts?"
+COPY_BOOL=$?
+
 DIRECTORY=~/repo
 SSH_HOSTS=~/.ssh/known_hosts
 set -euo pipefail
@@ -33,10 +36,6 @@ IP_ADDRESSES=$(grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}' 
 
 touch $SSH_HOSTS 
 chmod go-rwx $SSH_HOSTS
-
-yes_or_no "Copy SSH key to remote hosts?"
-COPY_BOOL=$?
-echo $COPY_BOOL
 
 set +euo pipefail
 for IP in $IP_ADDRESSES
