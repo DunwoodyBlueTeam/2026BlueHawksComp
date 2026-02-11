@@ -3,7 +3,7 @@
 # Description: Install ansible
 # Steps: Make ssh key, get ssh hostkeys, makes python virtual environment, installs ansible to the virtual environment.
 
-REMOTE_USER=sysadmin
+REMOTE_USER=root
 
 if [ $(whoami) != "ansible-control" ];
 then
