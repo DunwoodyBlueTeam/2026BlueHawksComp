@@ -11,9 +11,9 @@
     state: enabled
   when: ansible_facts['os_family'] == 'Debian'
 
-- name: UFW default allow outgoing
+- name: UFW default set outgoing to "{{ firewall_outgoing }}"
   community.general.ufw:
-    default: allow
+    default: "{{ firewall_outgoing }}"
     direction: outgoing
     state: enabled
   when: ansible_facts['os_family'] == 'Debian'
