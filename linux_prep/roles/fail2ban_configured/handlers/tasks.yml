@@ -1,4 +1,5 @@
 - name: Restart fail2ban
   ansible.builtin.service:
     name: fail2ban
+    enabled: true
     state: restarted
