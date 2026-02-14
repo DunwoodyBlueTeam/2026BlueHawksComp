@@ -1,0 +1,15 @@
+- name: Run tasks for creating smtp firewall rule
+  ansible.builtin.include_role:
+    name: create_public_firewall_rule
+  vars:
+    configured_service: "smtp"
+    configured_port: "25"
+    configured_protocol: "tcp"
+
+- name: Run tasks for creating pop3 firewall rule
+  ansible.builtin.include_role:
+    name: create_public_firewall_rule
+  vars:
+    configured_service: "pop3"
+    configured_port: "110"
+    configured_protocol: "tcp"

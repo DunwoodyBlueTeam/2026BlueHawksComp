@@ -16,7 +16,15 @@
           linux_private_network_cidr: 172.20.242.0/24
       #- role: webserver_managed
 # cleanup after comp. here if we need it.
-#  - name: Webserver
-#    hosts: econ
-#    roles:
-#      - role: webserver_managed
+  - name: Webserver
+    hosts: ecom
+    roles:
+      - role: webserver_managed
+  - name: Webmail
+    hosts: webmail
+    roles:
+      - role: webmail_managed
+  - name: Splunk
+    hosts: splunk
+    roles:
+      - role: splunk_managed

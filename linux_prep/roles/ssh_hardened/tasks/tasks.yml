@@ -1,6 +1,6 @@
 - name: Set our config at "{{ sshd_config_d_path }}{{ sshd_config_d_name }}"
   ansible.builtin.template:
-    src: bluehawks_ssh_config.j2
+    src: custom_ssh_config.j2
     dest: "{{ sshd_config_d_path }}{{ sshd_config_d_name }}"
     owner: root
     group: root
@@ -42,8 +42,32 @@
   notify: Validate SSH config
 
 
-- ansible.builtin.import_role:
-    name: ufw_configured
+# https://www.interserver.net/tips/kb/how-to-change-the-ssh-port-in-ubuntu-24-04-ssh-sockets/
+# https://unix.stackexchange.com/questions/657226/perform-systemctl-edit-with-ansible
+# Configures systemd ssh socket port mapping for newer Ubuntu versions
+- name: Created ssh.socket.d directory
+  file:
+    path: /etc/systemd/system/ssh.socket.d/
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  when:
+    - ansible_facts['distribution'] == 'Ubuntu'
+    - ansible_facts['distribution_version'] == '24.04'
+
+- name: Copy ssh.socket drop-in
+  template:
+    src: ssh.socket.j2
+    dest: /etc/systemd/system/ssh.socket.d/override.conf
+    owner: root
+    group: root
+    mode: 0640
+  notify: Restart SSH socket
+  when:
+    - ansible_facts['distribution'] == 'Ubuntu'
+    - ansible_facts['distribution_version'] == '24.04'
+
 
 - name: UFW allow tcp port "{{ ssh_port }}" for SSH from "{{ linux_private_network_cidr }}"
   community.general.ufw:
@@ -54,6 +78,9 @@
     comment: ssh
     state: enabled
   when: ansible_facts['os_family'] == 'Debian'
+
+- ansible.builtin.import_role:
+    name: ufw_configured
 
 
 - ansible.builtin.import_role:

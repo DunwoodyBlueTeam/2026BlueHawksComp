@@ -1,0 +1,45 @@
+---
+  - name: Set allowed outgoing ports for UFW systems
+    hosts:
+      - workstation
+      - ecom
+    vars:
+      firewall_outgoing: deny
+    become: true
+    tasks:
+      - name: UFW allow ports outgoing
+        community.general.ufw:
+          rule: allow
+          direction: out
+          port: "{{ item }}"
+          comment: Outgoing "{{ item }}" 
+          state: enabled
+        loop:
+          - 53
+          - 80
+          - 443
+          - 9997
+          #- 22
+        when: ansible_facts['os_family'] == 'Debian'
+
+#  - name: Set allowed outgoing ports for Firewalld systems
+#    hosts:
+#      - webmail
+#      - splunk
+#    vars:
+#      firewall_outgoing: deny
+#    role:
+#      - role: firewalld_configured
+#    tasks:
+#      - name: Firewalld allow ports outgoing
+#        community.general.ufw:
+#          rule: allow
+#          direction: outgoing
+#          port: "{{ item }}"
+#          comment: Outgoing "{{ item }}" 
+#          state: enabled
+#        loop:
+#          - 53
+#          - 80
+#          - 443
+#        when: ansible_facts['os_family'] == 'Debian'
